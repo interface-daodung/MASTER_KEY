@@ -1,0 +1,69 @@
+# Makefile cho MASTER_KEY: app WinForms MasterKeyVault + CLI mkv
+# Dung GNU make (da co san qua WinGet ezwinports). Chi dung lenh dotnet nen chay
+# duoc ca cmd / PowerShell / sh.
+#   make help                 - hien thi huong dan
+#   make build                - build Release ca 2 project
+#   make run                  - chay app WinForms
+#   make run-cli KEY=<TEN>    - chay mkv tra cuu 1 key, vd: make run-cli KEY=CONTROL_PLANE_TUNNEL_ID
+#   make selftest             - roundtrip ma hoa/giai ma + NormalizeKey (khong dung DPAPI that)
+#   make publish              - publish single-file ca 2 project
+#   make install              - publish mkv vao %USERPROFILE%\.tools
+#   make clean                - clean build output
+#   make del                  - xoa DPAPI (Credential MyPersonalVault_MasterKey) de gia lap chua co key
+
+DOTNET  ?= dotnet
+CONFIG  ?= Release
+RID     ?= win-x64
+
+APP := MasterKeyVault/MasterKeyVault.csproj
+CLI := mkv/mkv.csproj
+TOOLS_DIR := $(USERPROFILE)/.tools
+
+.DEFAULT_GOAL := help
+
+.PHONY: help build run run-cli selftest publish publish-cli publish-app install clean del
+
+help:
+	@echo "Targets:"
+	@echo "  make build                - build Release ca 2 project"
+	@echo "  make run                  - chay app WinForms MasterKeyVault"
+	@echo "  make run-cli KEY=<TEN>    - mkv tra cuu 1 key (vd KEY=CONTROL_PLANE_TUNNEL_ID)"
+	@echo "  make selftest             - mkv --selftest (khong dung DPAPI/vault that)"
+	@echo "  make publish              - publish single-file ca 2 project"
+	@echo "  make publish-cli          - publish mkv -> mkv/publish/mkv.exe"
+	@echo "  make publish-app          - publish WinForms -> MasterKeyVault/publish/"
+	@echo "  make install              - publish mkv vao %USERPROFILE%\.tools"
+	@echo "  make clean                - clean build output"
+	@echo "  make del                  - xoa DPAPI de gia lap chua co key"
+
+build:
+	$(DOTNET) build $(APP) -c $(CONFIG)
+	$(DOTNET) build $(CLI) -c $(CONFIG)
+
+run:
+	$(DOTNET) run --project $(APP) -c $(CONFIG)
+
+run-cli:
+	$(DOTNET) run --project $(CLI) -c $(CONFIG) -- $(KEY)
+
+selftest:
+	$(DOTNET) run --project $(CLI) -c $(CONFIG) -- --selftest
+
+publish: publish-cli publish-app
+
+publish-cli:
+	$(DOTNET) publish $(CLI) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o mkv/publish
+
+publish-app:
+	$(DOTNET) publish $(APP) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o MasterKeyVault/publish
+
+install:
+	$(DOTNET) publish $(CLI) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o "$(TOOLS_DIR)"
+	@echo "Installed mkv.exe to $(TOOLS_DIR). Mo terminal moi de nhan PATH."
+clean:
+	$(DOTNET) clean $(APP) -c $(CONFIG)
+	$(DOTNET) clean $(CLI) -c $(CONFIG)
+
+del:
+	-cmdkey /delete:MyPersonalVault_MasterKey
+	@echo "Da xoa DPAPI MyPersonalVault_MasterKey (neu co). App se roi vao view Khoi phuc."
