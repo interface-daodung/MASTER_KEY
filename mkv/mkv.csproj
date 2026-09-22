@@ -5,6 +5,11 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>..\MasterKeyVault\mkv.ico</ApplicationIcon>
+    <Win32Icon>..\MasterKeyVault\mkv.ico</Win32Icon>
+    <AssemblyName>mkv</AssemblyName>
+    <Product>MasterKeyVault</Product>
+    <Company>MasterKeyVault</Company>
   </PropertyGroup>
 
   <ItemGroup>

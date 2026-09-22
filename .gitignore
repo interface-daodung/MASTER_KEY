@@ -3,6 +3,10 @@ bin/
 obj/
 publish/
 
+## Installer output (giua .iss/.ps1, bo file .exe dong goi)
+dist/
+installer/Output/
+
 ## User-specific machine config
 *.user
 

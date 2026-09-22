@@ -6,6 +6,11 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>mkv.ico</ApplicationIcon>
+    <Win32Icon>mkv.ico</Win32Icon>
+    <AssemblyName>MasterKeyVault</AssemblyName>
+    <Product>MasterKeyVault</Product>
+    <Company>MasterKeyVault</Company>
   </PropertyGroup>
 
   <ItemGroup>
