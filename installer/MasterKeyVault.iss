@@ -35,6 +35,7 @@ WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
 ChangesEnvironment=yes
 CloseApplications=yes
@@ -123,63 +124,3 @@ begin
     RemovePath(ExpandConstant('{app}'));
 end;
 
-function IsDotNet8DesktopInstalled(): boolean;
-var
-  Names: TArrayOfString;
-  FindRec: TFindRec;
-  I: Integer;
-begin
-  Result := False;
-  if FindFirst(ExpandConstant('{commonpf}\dotnet\shared\Microsoft.NETCore.App\8.*'), FindRec) or
-     FindFirst(ExpandConstant('{commonpf}\dotnet\shared\Microsoft.WindowsDesktop.App\8.*'), FindRec) then
-  begin
-    FindClose(FindRec);
-    Result := True;
-    exit;
-  end;
-  { .NET 8 Desktop Runtime dang ky tai ...\sharedfx\Microsoft.WindowsDesktop.App\8.x }
-  if RegGetSubkeyNames(HKEY_LOCAL_MACHINE,
-    'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App',
-    Names) then
-  begin
-    for I := 0 to GetArrayLength(Names) - 1 do
-    begin
-      if Pos('8.', Names[I]) = 1 then
-      begin
-        Result := True;
-        exit;
-      end;
-    end;
-  end;
-  { Thu them nhan x86 tren may 64-bit (registry 32-bit view) }
-  if RegGetSubkeyNames(HKEY_LOCAL_MACHINE,
-    'SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\x86\sharedfx\Microsoft.WindowsDesktop.App',
-    Names) then
-  begin
-    for I := 0 to GetArrayLength(Names) - 1 do
-    begin
-      if Pos('8.', Names[I]) = 1 then
-      begin
-        Result := True;
-        exit;
-      end;
-    end;
-  end;
-end;
-
-function InitializeSetup(): Boolean;
-var
-  Res: Integer;
-begin
-  Result := True;
-  if not IsDotNet8DesktopInstalled() then
-  begin
-    Res := MsgBox(
-      'Chua phat hien .NET 8 Desktop Runtime (x64).' + #13#10 +
-      'App can runtime nay de chay (framework-dependent).' + #13#10 + #13#10 +
-      'Nhan Yes de mo trang tai .NET 8, No de tiep tuc cai dat.',
-      mbConfirmation, MB_YESNO);
-    if Res = IDYES then
-      ShellExec('open', 'https://dotnet.microsoft.com/download/dotnet/8.0', '', '', SW_SHOW, ewNoWait, Res);
-  end;
-end;
