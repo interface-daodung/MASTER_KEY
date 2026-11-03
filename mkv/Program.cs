@@ -33,6 +33,16 @@ if (first.Equals("agent", StringComparison.OrdinalIgnoreCase) || first is "--age
     return 0;
 }
 
+if (first.Equals("update", StringComparison.OrdinalIgnoreCase) || first is "--update")
+{
+    return RunUpdate();
+}
+
+if (first.Equals("uninstall", StringComparison.OrdinalIgnoreCase) || first is "--uninstall")
+{
+    return RunUninstall();
+}
+
 if (args.Length == 2 && (first.Equals("--import-browser-csv", StringComparison.OrdinalIgnoreCase) || first.Equals("import-browser-csv", StringComparison.OrdinalIgnoreCase)))
 {
     return await VaultTui.RunImportAsync(args[1]);
@@ -135,6 +145,8 @@ static void PrintUsage()
     Console.WriteLine("  mkv <KEY_NAME>                       in VALUE ra stdout (dùng trong script/subexpression)");
     Console.WriteLine("  mkv tui | --tui                      mở giao diện TUI quản lý vault");
     Console.WriteLine("  mkv agent                            hướng dẫn AI Agent cách gọi đúng và an toàn");
+    Console.WriteLine("  mkv update                           chạy bộ cài đặt để cập nhật phiên bản mới nhất");
+    Console.WriteLine("  mkv uninstall                        gỡ cài đặt MasterKeyVault khỏi hệ thống");
     Console.WriteLine("  mkv --list | -l                      liệt kê các TÊN KEY");
     Console.WriteLine("  mkv --path                           in đường dẫn vault.enc");
     Console.WriteLine("  mkv --import-browser-csv <file.csv>  nhập password trình duyệt");
@@ -186,6 +198,97 @@ static void PrintAgentGuide()
     Console.WriteLine("   2 = Lỗi DPAPI hoặc không thấy file vault.enc");
     Console.WriteLine("   3 = Lỗi giải mã dữ liệu (sai Master Key hoặc file bị hỏng)");
     Console.WriteLine("================================================================================");
+}
+
+static int RunUninstall()
+{
+    string[] candidates = [
+        @"C:\Program Files\MasterKeyVault\unins000.exe",
+        @"C:\Program Files (x86)\MasterKeyVault\unins000.exe",
+        Path.Combine(AppContext.BaseDirectory, "unins000.exe")
+    ];
+
+    bool triggered = false;
+    foreach (var unins in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+    {
+        if (File.Exists(unins))
+        {
+            Console.WriteLine($"Đang khởi chạy trình gỡ cài đặt: {unins}");
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = unins,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                System.Diagnostics.Process.Start(psi)?.WaitForExit();
+                triggered = true;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Lỗi khi chạy uninstaller: {ex.Message}");
+            }
+        }
+    }
+
+    if (!triggered)
+    {
+        Console.Error.WriteLine("Không tìm thấy unins000.exe trong thư mục cài đặt chuẩn.");
+        return 1;
+    }
+    return 0;
+}
+
+static int RunUpdate()
+{
+    string baseDir = AppContext.BaseDirectory;
+    string[] searchPaths = [
+        Path.Combine(baseDir, "..", "..", "..", "..", "dist"),
+        Path.Combine(baseDir, "dist"),
+        baseDir
+    ];
+
+    string? installer = null;
+    foreach (var p in searchPaths)
+    {
+        if (Directory.Exists(p))
+        {
+            var match = Directory.GetFiles(p, "MasterKeyVault-Setup-*.exe")
+                .OrderByDescending(f => f)
+                .FirstOrDefault();
+            if (match != null)
+            {
+                installer = match;
+                break;
+            }
+        }
+    }
+
+    if (installer == null)
+    {
+        Console.Error.WriteLine("Không tìm thấy file installer MasterKeyVault-Setup-*.exe.");
+        Console.Error.WriteLine("Hãy chạy 'make update' hoặc 'make publish' từ thư mục source project.");
+        return 1;
+    }
+
+    Console.WriteLine($"Đang khởi chạy bộ cập nhật: {installer}");
+    try
+    {
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = installer,
+            UseShellExecute = true,
+            Verb = "runas"
+        };
+        System.Diagnostics.Process.Start(psi);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Lỗi khi chạy installer: {ex.Message}");
+        return 1;
+    }
 }
 
 static string NormalizeKey(string raw)

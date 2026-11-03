@@ -126,7 +126,7 @@ end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
-  LegacyDir: string;
+  LegacyDir, UninsKey: string;
 begin
   if CurStep = ssInstall then
   begin
@@ -134,5 +134,9 @@ begin
     RemovePath(LegacyDir);
     if DirExists(LegacyDir) then
       DelTree(LegacyDir, True, True, True);
+
+    UninsKey := 'Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1';
+    if RegKeyExists(HKEY_LOCAL_MACHINE, UninsKey) then
+      RegDeleteKeyIncludingSubkeys(HKEY_LOCAL_MACHINE, UninsKey);
   end;
 end;
