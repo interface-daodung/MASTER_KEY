@@ -29,7 +29,7 @@ function Find-Iscc {
 }
 
 $cliExe = Join-Path $RepoRoot "mkv\publish\mkv.exe"
-$icon   = Join-Path $RepoRoot "MasterKeyVault\mkv.ico"
+$icon   = Join-Path $RepoRoot "assets\mkv.ico"
 
 foreach ($f in @($cliExe, $icon, $Iss)) {
   if (-not (Test-Path -LiteralPath $f)) {

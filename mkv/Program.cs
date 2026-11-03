@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using CredentialManagement;
@@ -51,7 +51,7 @@ try
     string? masterKey = LoadKeyFromDPAPI();
     if (masterKey is null)
     {
-        Console.Error.WriteLine("ERR: máy này chưa có DPAPI key. Mở app WinForms và quét QR để khôi phục trước.");
+        Console.Error.WriteLine("ERR: máy này chưa có DPAPI key. Chạy 'mkv' (hoặc 'mkv --tui') để mở khóa / khôi phục trước.");
         return 2;
     }
 

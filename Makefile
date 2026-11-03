@@ -17,7 +17,7 @@ CONFIG  ?= Release
 RID     ?= win-x64
 APP_VERSION ?= 1.0.0
 
-APP := MasterKeyVault/MasterKeyVault.csproj
+
 CLI := mkv/mkv.csproj
 ISS := installer/MasterKeyVault.iss
 TOOLS_DIR := $(USERPROFILE)/.tools

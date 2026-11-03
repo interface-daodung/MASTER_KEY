@@ -29,7 +29,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\dist
 OutputBaseFilename=MasterKeyVault-Setup-{#MyAppVersion}
-SetupIconFile=..\MasterKeyVault\{#MyAppIcon}
+SetupIconFile=..\assets\{#MyAppIcon}
 WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
@@ -55,7 +55,7 @@ Name: "addtopath"; Description: "Them thu muc cai dat vao PATH (de chay lenh `mk
 ; TUI va CLI mkv
 Source: "..\mkv\publish\{#MyCliExe}"; DestDir: "{app}"; Flags: ignoreversion
 ; Icon rieng de gan cho shortcut + UninstallDisplayIcon
-Source: "..\MasterKeyVault\{#MyAppIcon}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\{#MyAppIcon}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
@@ -125,9 +125,17 @@ end;
 function IsDotNet8DesktopInstalled(): boolean;
 var
   Names: TArrayOfString;
+  FindRec: TFindRec;
   I: Integer;
 begin
   Result := False;
+  if FindFirst(ExpandConstant('{commonpf}\dotnet\shared\Microsoft.NETCore.App\8.*'), FindRec) or
+     FindFirst(ExpandConstant('{commonpf}\dotnet\shared\Microsoft.WindowsDesktop.App\8.*'), FindRec) then
+  begin
+    FindClose(FindRec);
+    Result := True;
+    exit;
+  end;
   { .NET 8 Desktop Runtime dang ky tai ...\sharedfx\Microsoft.WindowsDesktop.App\8.x }
   if RegGetSubkeyNames(HKEY_LOCAL_MACHINE,
     'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App',
