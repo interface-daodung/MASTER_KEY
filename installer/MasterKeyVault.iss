@@ -124,3 +124,15 @@ begin
     RemovePath(ExpandConstant('{app}'));
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  LegacyDir: string;
+begin
+  if CurStep = ssInstall then
+  begin
+    LegacyDir := ExpandConstant('{commonpf32}\{#MyAppName}');
+    RemovePath(LegacyDir);
+    if DirExists(LegacyDir) then
+      DelTree(LegacyDir, True, True, True);
+  end;
+end;

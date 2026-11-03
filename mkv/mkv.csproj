@@ -10,8 +10,8 @@
     <AssemblyName>mkv</AssemblyName>
     <Product>MasterKeyVault</Product>
     <Company>MasterKeyVault</Company>
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
