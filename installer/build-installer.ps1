@@ -28,25 +28,12 @@ function Find-Iscc {
   return $null
 }
 
-$appExe = Join-Path $RepoRoot "MasterKeyVault\publish\MasterKeyVault.exe"
 $cliExe = Join-Path $RepoRoot "mkv\publish\mkv.exe"
 $icon   = Join-Path $RepoRoot "MasterKeyVault\mkv.ico"
-# DLL native OpenCvSharp: dotnet publish incremental co the lam rot file nay,
-# neu thieu thi installer se gay (chuc nang quet camera hong) -> fail nhanh.
-$requiredNative = @(
-  (Join-Path $RepoRoot "MasterKeyVault\publish\OpenCvSharpExtern.dll"),
-  (Join-Path $RepoRoot "MasterKeyVault\publish\opencv_videoio_ffmpeg4130_64.dll")
-)
 
-foreach ($f in @($appExe, $cliExe, $icon, $Iss)) {
+foreach ($f in @($cliExe, $icon, $Iss)) {
   if (-not (Test-Path -LiteralPath $f)) {
-    Write-Error "Thieu file: $f. Hay chay 'make publish-app publish-cli' truoc."
-    exit 1
-  }
-}
-foreach ($f in $requiredNative) {
-  if (-not (Test-Path -LiteralPath $f)) {
-    Write-Error "Thieu DLL native: $f. Xoa thu muc publish va chay lai 'make publish-app' (publish sach) roi build installer."
+    Write-Error "Thieu file: $f. Hay chay 'make publish-cli' truoc."
     exit 1
   }
 }

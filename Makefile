@@ -1,9 +1,9 @@
-# Makefile cho MASTER_KEY: app WinForms MasterKeyVault + CLI mkv
+# Makefile cho MASTER_KEY: terminal UI va CLI mkv
 # Dung GNU make (da co san qua WinGet ezwinports). Chi dung lenh dotnet nen chay
 # duoc ca cmd / PowerShell / sh.
 #   make help                 - hien thi huong dan
 #   make build                - build Release ca 2 project
-#   make run                  - chay app WinForms
+#   make run                  - mo TUI mkv
 #   make run-cli KEY=<TEN>    - chay mkv tra cuu 1 key, vd: make run-cli KEY=CONTROL_PLANE_TUNNEL_ID
 #   make selftest             - roundtrip ma hoa/giai ma + NormalizeKey (khong dung DPAPI that)
 #   make publish              - publish single-file ca 2 project + dong goi installer (dist/*.exe)
@@ -28,24 +28,25 @@ TOOLS_DIR := $(USERPROFILE)/.tools
 
 help:
 	@echo "Targets:"
-	@echo "  make build                - build Release ca 2 project"
-	@echo "  make run                  - chay app WinForms MasterKeyVault"
+	@echo "  make build                - build mkv TUI/CLI"
+	@echo "  make run                  - mo giao dien TUI mkv"
 	@echo "  make run-cli KEY=<TEN>    - mkv tra cuu 1 key (vd KEY=CONTROL_PLANE_TUNNEL_ID)"
+	@echo "  mkv --import-browser-csv <file.csv> - nhap password trinh duyet vao vault"
+	@echo "  mkv --export-browser-csv <file.csv> - xuat password trinh duyet ra CSV"
 	@echo "  make selftest             - mkv --selftest (khong dung DPAPI/vault that)"
 	@echo "  make publish              - publish + dong goi installer dist/MasterKeyVault-Setup-<ver>.exe"
 	@echo "  make publish-cli          - publish mkv -> mkv/publish/mkv.exe"
-	@echo "  make publish-app          - publish WinForms -> MasterKeyVault/publish/"
+	@echo "  make publish-app          - alias cua publish-cli"
 	@echo "  make installer            - dong goi installer tu publish/ (can Inno Setup 6)"
 	@echo "  make install              - publish mkv vao %USERPROFILE%\.tools"
 	@echo "  make clean                - clean build output"
 	@echo "  make del                  - xoa DPAPI de gia lap chua co key"
 
 build:
-	$(DOTNET) build $(APP) -c $(CONFIG)
 	$(DOTNET) build $(CLI) -c $(CONFIG)
 
 run:
-	$(DOTNET) run --project $(APP) -c $(CONFIG)
+	$(DOTNET) run --project $(CLI) -c $(CONFIG) -- --tui
 
 run-cli:
 	$(DOTNET) run --project $(CLI) -c $(CONFIG) -- $(KEY)
@@ -59,18 +60,15 @@ publish-cli:
 	if exist mkv\publish rmdir /s /q mkv\publish
 	$(DOTNET) publish $(CLI) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o mkv/publish
 
-publish-app:
-	if exist MasterKeyVault\publish rmdir /s /q MasterKeyVault\publish
-	$(DOTNET) publish $(APP) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o MasterKeyVault/publish
+publish-app: publish-cli
 
-installer: publish-cli publish-app
+installer: publish-cli
 	powershell -NoProfile -ExecutionPolicy Bypass -File installer/build-installer.ps1 -Version "$(APP_VERSION)"
 
 install:
 	$(DOTNET) publish $(CLI) -c $(CONFIG) -r $(RID) --self-contained false -p:PublishSingleFile=true -o "$(TOOLS_DIR)"
 	@echo "Installed mkv.exe to $(TOOLS_DIR). Mo terminal moi de nhan PATH."
 clean:
-	$(DOTNET) clean $(APP) -c $(CONFIG)
 	$(DOTNET) clean $(CLI) -c $(CONFIG)
 
 del:

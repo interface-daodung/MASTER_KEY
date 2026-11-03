@@ -12,10 +12,19 @@ using OtpNet;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-if (args.Length == 0)
+if (args.Length == 0 || args[0] is "--tui" or "-i")
 {
-    PrintUsage();
-    return 2;
+    return await VaultTui.RunAsync();
+}
+
+if (args.Length == 2 && (args[0] is "--import-browser-csv" or "import-browser-csv"))
+{
+    return await VaultTui.RunImportAsync(args[1]);
+}
+
+if (args.Length == 2 && (args[0] is "--export-browser-csv" or "export-browser-csv"))
+{
+    return await VaultTui.RunExportAsync(args[1]);
 }
 
 string first = args[0].Trim();
@@ -57,12 +66,17 @@ try
 
     if (first is "-l" or "--list")
     {
-        foreach (string k in dict.Keys.OrderBy(k => k, StringComparer.Ordinal))
+        foreach (string k in dict.Keys.Where(k => !k.StartsWith("__MKV_", StringComparison.Ordinal)).OrderBy(k => k, StringComparer.Ordinal))
             Console.WriteLine(k);
         return 0;
     }
 
     string key = NormalizeKey(first);
+    if (key.StartsWith("__MKV_", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.Error.WriteLine("ERR: key nội bộ không thể truy cập qua CLI.");
+        return 1;
+    }
     if (string.IsNullOrEmpty(key))
     {
         Console.Error.WriteLine("ERR: tên key rỗng.");
@@ -103,6 +117,10 @@ static void PrintUsage()
 {
     Console.Error.WriteLine("Usage:");
     Console.Error.WriteLine("  mkv <KEY_NAME>          in VALUE ra stdout");
+    Console.Error.WriteLine("  mkv                     mở giao diện TUI quản lý vault");
+    Console.Error.WriteLine("  mkv --tui               mở TUI trực tiếp");
+    Console.Error.WriteLine("  mkv --import-browser-csv <file.csv>  nhập password trình duyệt");
+    Console.Error.WriteLine("  mkv --export-browser-csv <file.csv>  xuất password trình duyệt");
     Console.Error.WriteLine("  mkv '$env:FOO'          tự strip prefix $env: (nhớ dùng nháy ĐƠN trong PowerShell)");
     Console.Error.WriteLine("  mkv --list              liệt kê các KEY");
     Console.Error.WriteLine("  mkv --path              in đường dẫn vault.enc");

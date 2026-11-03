@@ -1,10 +1,10 @@
-; Inno Setup script cho MasterKeyVault + mkv CLI
+; Inno Setup script cho mkv terminal vault UI
 ; Build bang:  make publish   (hoac: make installer)
 ; Yeu cau: Inno Setup 6 (ISCC.exe). Neu chua co: winget install -e --id JRSoftware.InnoSetup
 ;
 ; Hanh vi cai dat:
 ;   - Cai vao {autopf}\MasterKeyVault (Program Files)
-;   - Copy MasterKeyVault.exe (WinForms) + mkv.exe (CLI) + mkv.ico + DLLs tu thu muc publish/
+;   - Cai mkv.exe (TUI + CLI) va icon
 ;   - Tu dong them {app} vao PATH may (HKLM) de go `mkv` o dau cung chay
 ;   - Tao shortcut Start Menu + Desktop cho app (icon mkv.ico)
 ;   - Go PATH khi Uninstall
@@ -14,7 +14,7 @@
 #endif
 #define MyAppName "MasterKeyVault"
 #define MyAppPublisher "MasterKeyVault"
-#define MyAppExe "MasterKeyVault.exe"
+#define MyAppExe "mkv.exe"
 #define MyCliExe "mkv.exe"
 #define MyAppIcon "mkv.ico"
 
@@ -52,24 +52,22 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "addtopath"; Description: "Them thu muc cai dat vao PATH (de chay lenh `mkv` moi noi)"; GroupDescription: "Tuy chon CLI:"; Flags: checkedonce
 
 [Files]
-; App WinForms + DLL phu thuoc (da dotnet publish truoc)
-Source: "..\MasterKeyVault\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"
-; CLI mkv (da dotnet publish truoc) -> cung thu muc {app} de PATH chi can 1 entry
+; TUI va CLI mkv
 Source: "..\mkv\publish\{#MyCliExe}"; DestDir: "{app}"; Flags: ignoreversion
 ; Icon rieng de gan cho shortcut + UninstallDisplayIcon
 Source: "..\MasterKeyVault\{#MyAppIcon}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
 
 [Registry]
 ; Them {app} vao PATH may (HKLM) khi chon Task addtopath. Check NeedsAddPath tranh trung lap.
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Tasks: addtopath; Check: NeedsAddPath('{app}')
 
 [Run]
-Filename: "{app}\{#MyAppExe}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 function NeedsAddPath(Param: string): boolean;
