@@ -15,7 +15,7 @@
 DOTNET  ?= dotnet
 CONFIG  ?= Release
 RID     ?= win-x64
-APP_VERSION ?= 1.0.0
+APP_VERSION ?= 1.1.0
 
 
 CLI := mkv/mkv.csproj

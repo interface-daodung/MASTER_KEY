@@ -2,10 +2,10 @@
 <#
   Build installer MasterKeyVault-Setup-<version>.exe tu thu muc publish/ bang Inno Setup 6.
   Dung chung cho: make installer / make publish
-  Tham so: -Version "1.0.0"
+  Tham so: -Version "1.1.0"
 #>
 param(
-  [string]$Version = "1.0.0",
+  [string]$Version = "1.1.0",
   [string]$Iss = (Join-Path $PSScriptRoot "MasterKeyVault.iss"),
   [string]$RepoRoot = (Split-Path $PSScriptRoot -Parent)
 )
