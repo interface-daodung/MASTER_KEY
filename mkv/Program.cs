@@ -8,26 +8,40 @@ using OtpNet;
 // Ví dụ:  mkv CONTROL_PLANE_TUNNEL_ID
 //         mkv '$env:CONTROL_PLANE_TUNNEL_ID'   (nháy đơn để PowerShell khỏi expand)
 //         mkv --list   (liệt kê key)
+//         mkv agent    (hướng dẫn an toàn cho AI Agent)
+//         mkv tui      (mở giao diện TUI)
 // Exit code: 0=OK, 1=không thấy key, 2=vault/DPAPI lỗi, 3=giải mã lỗi.
 
 Console.OutputEncoding = Encoding.UTF8;
 
-if (args.Length == 0 || args[0] is "--tui" or "-i")
+if (args.Length == 0)
+{
+    PrintUsage();
+    return 0;
+}
+
+string first = args[0].Trim();
+
+if (first.Equals("tui", StringComparison.OrdinalIgnoreCase) || first is "--tui" or "-i")
 {
     return await VaultTui.RunAsync();
 }
 
-if (args.Length == 2 && (args[0] is "--import-browser-csv" or "import-browser-csv"))
+if (first.Equals("agent", StringComparison.OrdinalIgnoreCase) || first is "--agent")
+{
+    PrintAgentGuide();
+    return 0;
+}
+
+if (args.Length == 2 && (first.Equals("--import-browser-csv", StringComparison.OrdinalIgnoreCase) || first.Equals("import-browser-csv", StringComparison.OrdinalIgnoreCase)))
 {
     return await VaultTui.RunImportAsync(args[1]);
 }
 
-if (args.Length == 2 && (args[0] is "--export-browser-csv" or "export-browser-csv"))
+if (args.Length == 2 && (first.Equals("--export-browser-csv", StringComparison.OrdinalIgnoreCase) || first.Equals("export-browser-csv", StringComparison.OrdinalIgnoreCase)))
 {
     return await VaultTui.RunExportAsync(args[1]);
 }
-
-string first = args[0].Trim();
 
 if (first is "-h" or "--help" or "help" or "/?")
 {
@@ -51,7 +65,7 @@ try
     string? masterKey = LoadKeyFromDPAPI();
     if (masterKey is null)
     {
-        Console.Error.WriteLine("ERR: máy này chưa có DPAPI key. Chạy 'mkv' (hoặc 'mkv --tui') để mở khóa / khôi phục trước.");
+        Console.Error.WriteLine("ERR: máy này chưa có DPAPI key. Chạy 'mkv tui' để mở khóa / khôi phục trước.");
         return 2;
     }
 
@@ -115,18 +129,63 @@ catch (Exception ex)
 
 static void PrintUsage()
 {
-    Console.Error.WriteLine("Usage:");
-    Console.Error.WriteLine("  mkv <KEY_NAME>          in VALUE ra stdout");
-    Console.Error.WriteLine("  mkv                     mở giao diện TUI quản lý vault");
-    Console.Error.WriteLine("  mkv --tui               mở TUI trực tiếp");
-    Console.Error.WriteLine("  mkv --import-browser-csv <file.csv>  nhập password trình duyệt");
-    Console.Error.WriteLine("  mkv --export-browser-csv <file.csv>  xuất password trình duyệt");
-    Console.Error.WriteLine("  mkv '$env:FOO'          tự strip prefix $env: (nhớ dùng nháy ĐƠN trong PowerShell)");
-    Console.Error.WriteLine("  mkv --list              liệt kê các KEY");
-    Console.Error.WriteLine("  mkv --path              in đường dẫn vault.enc");
-    Console.Error.WriteLine("Ví dụ:");
-    Console.Error.WriteLine("  mkv CONTROL_PLANE_TUNNEL_ID");
-    Console.Error.WriteLine("  $t = mkv CONTROL_PLANE_TUNNEL_ID");
+    Console.WriteLine("Master Key Vault (mkv) - Trợ lý quản lý khóa và mật khẩu an toàn");
+    Console.WriteLine();
+    Console.WriteLine("Usage:");
+    Console.WriteLine("  mkv <KEY_NAME>                       in VALUE ra stdout (dùng trong script/subexpression)");
+    Console.WriteLine("  mkv tui | --tui                      mở giao diện TUI quản lý vault");
+    Console.WriteLine("  mkv agent                            hướng dẫn AI Agent cách gọi đúng và an toàn");
+    Console.WriteLine("  mkv --list | -l                      liệt kê các TÊN KEY");
+    Console.WriteLine("  mkv --path                           in đường dẫn vault.enc");
+    Console.WriteLine("  mkv --import-browser-csv <file.csv>  nhập password trình duyệt");
+    Console.WriteLine("  mkv --export-browser-csv <file.csv>  xuất password trình duyệt");
+    Console.WriteLine("  mkv '$env:FOO'                       tự strip prefix $env: (nhớ dùng nháy ĐƠN trong PowerShell)");
+    Console.WriteLine();
+    Console.WriteLine("Ví dụ:");
+    Console.WriteLine("  mkv tui");
+    Console.WriteLine("  mkv --list");
+    Console.WriteLine("  mkv agent");
+    Console.WriteLine("  $env:GITHUB_TOKEN = (mkv GITHUB_TOKEN)");
+    Console.WriteLine("  & mytool --token (mkv GITHUB_TOKEN)");
+}
+
+static void PrintAgentGuide()
+{
+    Console.WriteLine("================================================================================");
+    Console.WriteLine(" MKV AGENT GUIDE: HƯỚNG DẪN DÀNH CHO AI AGENT & AUTOMATION SCRIPT");
+    Console.WriteLine("================================================================================");
+    Console.WriteLine();
+    Console.WriteLine("1. NGUYÊN TẮC BẢO MẬT TUYỆT ĐỐI:");
+    Console.WriteLine("   - KHÔNG chạy lệnh 'mkv <KEY_NAME>' trần ra màn hình console.");
+    Console.WriteLine("   - KHÔNG dùng echo, cat, Write-Host, Write-Output với giá trị key.");
+    Console.WriteLine("   - Việc in ra stdout sẽ làm lộ secret vào transcript/log của Agent.");
+    Console.WriteLine();
+    Console.WriteLine("2. CÁCH LẤY DANH SÁCH KEY (AN TOÀN):");
+    Console.WriteLine("   mkv --list");
+    Console.WriteLine("   (Chỉ liệt kê các TÊN key có trong vault, không lộ bất kỳ giá trị nào).");
+    Console.WriteLine();
+    Console.WriteLine("3. CÁCH SỬ DỤNG KEY ĐÚNG CHUẨN TRONG POWERSHELL:");
+    Console.WriteLine("   a) Nạp vào biến môi trường tạm thời của phiên làm việc (Session):");
+    Console.WriteLine("      $env:GITHUB_TOKEN = (mkv GITHUB_TOKEN)");
+    Console.WriteLine("      $env:AWS_SECRET_ACCESS_KEY = (mkv AWS_SECRET_ACCESS_KEY)");
+    Console.WriteLine();
+    Console.WriteLine("   b) Truyền trực tiếp làm tham số cho CLI / câu lệnh khác:");
+    Console.WriteLine("      & deploy-tool.exe --api-key (mkv DEPLOY_KEY)");
+    Console.WriteLine("      curl.exe -H \"Authorization: Bearer $(mkv API_TOKEN)\" https://api.example.com");
+    Console.WriteLine();
+    Console.WriteLine("   c) Gán vào biến PowerShell tạm thời (không in ra stdout):");
+    Console.WriteLine("      $secret = mkv MY_SECRET_KEY");
+    Console.WriteLine();
+    Console.WriteLine("4. GIAO DIỆN TUI (DÀNH CHO NGƯỜI DÙNG TRỰC TIẾP):");
+    Console.WriteLine("   mkv tui       (hoặc: mkv --tui)");
+    Console.WriteLine("   LƯU Ý: Agent KHÔNG ĐƯỢC chạy lệnh TUI vì là giao diện tương tác gây chặn session.");
+    Console.WriteLine();
+    Console.WriteLine("5. MÃ TRẢ VỀ (EXIT CODES):");
+    Console.WriteLine("   0 = Thành công (OK)");
+    Console.WriteLine("   1 = Không tìm thấy key, tên key rỗng hoặc truy cập key nội bộ");
+    Console.WriteLine("   2 = Lỗi DPAPI hoặc không thấy file vault.enc");
+    Console.WriteLine("   3 = Lỗi giải mã dữ liệu (sai Master Key hoặc file bị hỏng)");
+    Console.WriteLine("================================================================================");
 }
 
 static string NormalizeKey(string raw)

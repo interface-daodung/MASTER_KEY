@@ -1,6 +1,6 @@
 # MASTER_KEY / mkv
 
-`mkv` là giao diện dòng lệnh và TUI để quản lý `vault.enc` trên Windows. Chạy `mkv` hoặc `mkv --tui` để mở menu; các lệnh như `mkv --list`, `mkv KEY_NAME` vẫn giữ nguyên cho script.
+`mkv` là giao diện dòng lệnh và TUI để quản lý `vault.enc` trên Windows. Chạy `mkv tui` (hoặc `mkv --tui`) để mở menu TUI; gõ `mkv` hoặc `mkv -h` để xem trợ giúp CLI; gõ `mkv agent` để xem hướng dẫn an toàn cho AI Agent/Script; các lệnh như `mkv --list`, `mkv KEY_NAME` dùng cho script và automation.
 
 ## Phím tắt trong TUI
 
