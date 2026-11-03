@@ -26,6 +26,7 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
+DisableProgramGroupPage=yes
 AllowNoIcons=yes
 OutputDir=..\dist
 OutputBaseFilename=MasterKeyVault-Setup-{#MyAppVersion}
@@ -48,7 +49,7 @@ VersionInfoProductName={#MyAppName}
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+
 Name: "addtopath"; Description: "Them thu muc cai dat vao PATH (de chay lenh `mkv` moi noi)"; GroupDescription: "Tuy chon CLI:"; Flags: checkedonce
 
 [Files]
@@ -58,9 +59,9 @@ Source: "..\mkv\publish\{#MyCliExe}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\assets\{#MyAppIcon}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
+
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Parameters: "--tui"; Tasks: desktopicon; IconFilename: "{app}\{#MyAppIcon}"; Comment: "Mo {#MyAppName}"
+
 
 [Registry]
 ; Them {app} vao PATH may (HKLM) khi chon Task addtopath. Check NeedsAddPath tranh trung lap.
